@@ -19,20 +19,47 @@
   :root[data-theme="dark"] {
     --bg: #151a15; --board: #1f281f; --snake: #7bd389; --food: #ff6b57; --text: #e6efe6;
   }
+  * { box-sizing: border-box; }
   html { scroll-padding-top: env(safe-area-inset-top, 0px); }
   body {
-    margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+    margin: 0;
+    min-height: 100vh;
+    padding: max(16px, env(safe-area-inset-top, 0px)) 12px max(16px, env(safe-area-inset-bottom, 0px));
+    background: var(--bg); color: var(--text);
     font-family: system-ui, sans-serif;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   }
-  canvas { background: var(--board); border-radius: 8px; max-width: 92vw; touch-action: none; }
-  p { margin: 0; }
+  #score {
+    margin: 0;
+    font-size: clamp(1rem, 4vw, 1.5rem);
+    font-weight: 700;
+    text-align: center;
+  }
+  canvas {
+    display: block;
+    width: min(86vw, 400px);
+    height: auto;
+    aspect-ratio: 1;
+    background: var(--board);
+    border-radius: 12px;
+    border: 2px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+    touch-action: none;
+  }
+  .hint {
+    margin: 0;
+    max-width: 32rem;
+    text-align: center;
+    font-size: clamp(0.85rem, 3vw, 1rem);
+    line-height: 1.5;
+    padding: 0 8px;
+  }
 </style>
 </head>
 <body>
   <p id="score">Score: 0</p>
   <canvas id="game" width="400" height="400"></canvas>
-  <p>Arrow keys / WASD or swipe. Press Space to restart.</p>
+  <p class="hint">Arrow keys / WASD or swipe. Press Space to restart.</p>
 
 <script>
   const canvas = document.getElementById("game");
@@ -101,9 +128,17 @@
   });
 
   let sx, sy;
-  canvas.addEventListener("touchstart", e => { sx = e.touches[0].clientX; sy = e.touches[0].clientY; });
+  canvas.addEventListener("touchstart", e => {
+    const touch = e.touches[0];
+    sx = touch.clientX;
+    sy = touch.clientY;
+  });
+
   canvas.addEventListener("touchend", e => {
-    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - sx;
+    const dy = touch.clientY - sy;
+    if (Math.abs(dx) < 12 && Math.abs(dy) < 12) return;
     if (Math.abs(dx) > Math.abs(dy)) turn(dx > 0 ? 1 : -1, 0);
     else turn(0, dy > 0 ? 1 : -1);
   });
